@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 #
 # This code implements a simple music box.
+# See https://github.com/rosswesleyporter/dqmusicbox
 # It's an MP3 player on the inside.
 # It looks like an old car radio on the outside (two knobs).
 # It receives events from a rotary encoder for volume and invokes vlc methods in response.
 # It receives events from a rotary encoder for tuning and invokes vlc to go to the next or previous tracks.
 #
-# Author : Ross Porter, with lots of help from the Internet, specifically including Bob Rathbone
+# Author : Ross Porter, with lots of help from the Internet, specifically including Bob Rathbone and Stephen Christopher Phillips
 #          This is my first Python program...
 #
 
