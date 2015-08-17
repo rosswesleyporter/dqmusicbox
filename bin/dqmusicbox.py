@@ -22,6 +22,7 @@ import sys
 import time
 import logging
 import logging.handlers
+import subprocess
  
 #setup logging
 #follows the example of http://blog.scphillips.com/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
@@ -60,19 +61,38 @@ sys.stderr = MyLogger(logger, logging.ERROR)
 #Log that we're starting up
 logger.info("dqmusicbox starting.")
 
+
+#Define a few things about GPIO / pints
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False);
+SONGS_NEXT = 3
+SONGS_PREVIOUS = 4
+SONGS_PRESS = 2
+VOLUME_UP = 9 
+VOLUME_DOWN = 11
+VOLUME_PRESS = 10
+INDICATOR_LIGHT = 22
+
+#Now we have enough things in place that we can define what to do if this program has to exit.
+def cleanup():
+        logger.info('In cleanup(). Exiting shortly.')
+        GPIO.cleanup()
+        return
+
 #Import the module that with Python bindings for vlc.
 #This is not included with Raspbian.
+#Didn't import this above, as we want to handle the exception
 try:
     import vlc
 except:
-        logger.info("Import vlc module failed -- please insure that the vlc module is installed. Exiting program.")
+        logger.error("Import vlc module failed -- please insure that the vlc module is installed. Exiting.")
+        cleanup()
         sys.exit(1)
 else:
     logger.info("vlc module successfully imported.")
-            
+
 
 # Raspberry Pi Rotary Encoder Class (knobs)
-# $Id: rotary_class.py,v 1.2 2014/01/31 13:34:48 bob Exp $
 #
 # Author : Bob Rathbone
 # Site   : http://www.bobrathbone.com
@@ -98,12 +118,10 @@ class RotaryEncoder:
 		self.pinB = pinB
 		self.button = button
 		self.callback = callback
-
-		GPIO.setmode(GPIO.BCM)
+		logger.info('You may see some warning about GPIO pull-up resistors. These can be ignored.')
 		
 		# The following lines enable the internal pull-up resistors
 		# on version 2 boards
-		GPIO.setwarnings(False)
 		GPIO.setup(self.pinA, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 		GPIO.setup(self.pinB, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 		GPIO.setup(self.button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -165,82 +183,138 @@ class RotaryEncoder:
 # End of RotaryEncoder class
 
 #Now back to code written by Ross
-#Setup the media player with a playlist of all music in a specific folder and subfolders
+#Building a Python list of all music in a specific folder and subfolders
+#Engage the media player to build a playlist based on this Python list
 music_path = '/home/pi/dqmusicbox/music'
 music_files = [os.path.join(dirpath, f)
                for dirpath, dirnames, files, in sorted(os.walk(music_path))
-               for extension in ['mp3', 'flac']
+               for extension in ['mp3', 'flac', 'm4a']
                for f in fnmatch.filter(files, '*.' + extension)]
-player = vlc.MediaPlayer()
-medialist = vlc.MediaList(music_files)
-mlplayer = vlc.MediaListPlayer()
+if len(music_files) == 0:
+        msg = 'No music files found in {}. {}'.format(len(music_files),'Exiting.')
+        logger.error(msg)
+        cleanup()
+        exit(1)
+else:
+        msg = 'Number of music files found: {}'.format(len(music_files))
+        logger.info(msg)
+
+try:
+        player = vlc.MediaPlayer()
+except:
+        logger.error("Unable to create vlc.MediaPlayer() object. Exiting.")
+        cleanup()
+        sys.exit(1)
+else:
+        logger.info("vlc.MediaPlayer() object created.")
+
+try:
+        medialist = vlc.MediaList(music_files)
+except:
+        logger.error("Unable to create vlc.MediaList(music_files) object. Exiting.")
+        cleanup()
+        sys.exit(1)
+else:
+        logger.info("vlc.MediaList(music_files) created.")
+        
+try:
+        mlplayer = vlc.MediaListPlayer()
+except:
+        logger.error("Unable to create vlc.MediaListPlayer() oboject. Exiting.")
+        cleanup()
+        sys.exit(1)
+else:
+        logger.info("vlc.MediaListPlayer() created.")
+        
 mlplayer.set_media_player(player)
 mlplayer.set_media_list(medialist)
 
-#Setup the tuning knob (rotary encoder)
-TUNING_NEXT = 3 	        # Pin 5 
-TUNING_PREVIOUS = 4	        # Pin 7
-TUNING_PRESS = 2	        # Pin 3
+#Setup the songs knob (rotary encoder)
 button_down_time = 0
 last_knob_event = time.time()
 
-def tuning_event(event):
-        global tuning_knob
+#event handler for the songs knob
+def songs_event(event):
+        #global songs_knob
         global button_down_time
         global last_knob_event
         last_knob_event = time.time()
-        #logger.info('tuning event = ' + str(event))
         
         if event == RotaryEncoder.CLOCKWISE:
-                logger.info('tuning CLOCKWISE')
+                logger.info('songs CLOCKWISE')
                 mlplayer.next()
                 logger.info('track = ' + str(player.get_media().get_mrl()))
                 return
         
         if event == RotaryEncoder.ANTICLOCKWISE:
-                logger.info('tuning ANTICLOCKWISE')
+                logger.info('songs ANTICLOCKWISE')
                 mlplayer.previous()
                 logger.info('track = ' + str(player.get_media().get_mrl()))
                 return
 
         if event == RotaryEncoder.BUTTONDOWN:
-                logger.info('tuning BUTTONDOWN')
+                logger.info('songs BUTTONDOWN')
                 button_down_time = time.time()
                 mlplayer.pause()
                 return
 
         if event == RotaryEncoder.BUTTONUP:
-                logger.info('tuning BUTTONUP')
+                logger.info('songs BUTTONUP')
                 #a 10 second press is a shutdown request
                 if time.time() > button_down_time + 10 and time.time() < button_down_time + 30:
-                        logger.info('tuning 10 second press; initiating shutdown -h now')
+                        logger.info('songs 10 second press; initiating shutdown -h now')
                         mlplayer.stop()
                         os.system("sudo shutdown -h now")
                 return
+
+        logger.error('Something weird happened. Unhandled songs knob event?')
+        
         return
 
 
-tuning_knob = RotaryEncoder(TUNING_NEXT, TUNING_PREVIOUS, TUNING_PRESS, tuning_event)
+try:
+        songs_knob = RotaryEncoder(SONGS_NEXT, SONGS_PREVIOUS, SONGS_PRESS, songs_event)
+except:
+        logger.error("Unable to create songs_knob object. Exiting.")
+        cleanup()
+        sys.exit(1)
+else:
+        logger.info("Created songs_knob object.")
 
 
-#Set the system and VLC volume levels.
-#This program does not otherwise change the system volume level
-#The volume knob will be used to set the VLC volume level
-os.system('sudo amixer sset Headphone 100%')
-player.audio_set_volume(30)
+#Set the system volume level. This program does not otherwise change the system volume level.
+#This is somewhat specific to the audio device.
+#It should work with the recommended audio device.
+#It may not work with other audio devices.
+        
+try:
+        os.system('sudo amixer sset Headphone 100%')
+except:
+        logger.error("The following command failed: sudo amixer sset Headphone 100%. Try this from the command line. You may need to change your system audio configuration. Easiest if you use the recommended USB audio adapter.")
+else:
+        logger.info("Set system volume level")
+
+proc = subprocess.Popen(['sudo amixer get Headphone'], stdout=subprocess.PIPE, shell=True)
+(out,err) = proc.communicate()
+logger.info('If audio is not working, check just below to see if Headphone Front Left is set to 100%. Audio will be easiest if you use the recommended USB audio adapter')
+logger.info(out)
+
+#Set the initial vlc volume level.
+try:
+        player.audio_set_volume(30)
+except:
+        logger.error("Failed to set initial vlc volume level.")
+else:
+        logger.info("Set initial vlc volume level.")
 
 
 #Setup the volume knob
-VOLUME_UP = 9 
-VOLUME_DOWN = 11
-VOLUME_PRESS = 10
-
+#event handler for the volume knob
 def volume_event(event):
-        global volume_knob
+        #global volume_knob
         global button_down_time
         global last_knob_event
         last_knob_event = time.time()
-        #logger.info('volume event = ' + str(event))
 
         if event == RotaryEncoder.CLOCKWISE:
                 logger.info('volume CLOCKWISE')
@@ -269,25 +343,32 @@ def volume_event(event):
         if event == RotaryEncoder.BUTTONUP:
                 logger.info('volume BUTTONUP')
                 if time.time() > button_down_time + 10 and time.time() < button_down_time + 30:
-                        logger.info('volume 10 second press; initiating shutdown -h now')
+                        logger.info('volume 10 second press; rebooting now')
                         mlplayer.stop()
-                        os.system("sudo shutdown -h now")
+                        os.system("sudo reboot")
                 return
+        
+        logger.error('Something weird happened. Unhandled volume knob event?')
         
         return
 
-volume_knob = RotaryEncoder(VOLUME_UP, VOLUME_DOWN, VOLUME_PRESS, volume_event)
+try:
+        volume_knob = RotaryEncoder(VOLUME_UP, VOLUME_DOWN, VOLUME_PRESS, volume_event)
+except:
+        logger.error('Unable to create volume_knob object. Exiting')
+        cleanup()
+        sys.exit(1)
+else:
+        logger.info('volume_knob object created')
 
 
 #turn on indicator light to show that the music box is ready
-INDICATOR_LIGHT = 22
-GPIO.setmode(GPIO.BCM)
 GPIO.setup(INDICATOR_LIGHT, GPIO.OUT)
 GPIO.output(INDICATOR_LIGHT, True)
 
 
 while True:
-        time.sleep(10)
+        time.sleep(600)
         if (last_knob_event + 3600) < time.time() and mlplayer.is_playing() == True:  #stop music if no knob activity in the last hour
                 logger.info('automatic timeout')
                 mlplayer.pause()
