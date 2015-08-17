@@ -1,24 +1,25 @@
 #!/usr/bin/env python
 #
 # This code implements a simple music box.
-# See https://github.com/rosswesleyporter/dqmusicbox
 # It's an MP3 player on the inside.
 # It looks like an old car radio on the outside (two knobs).
+# It creates a vlc playlist of all the music on the pi.
 # It receives events from a rotary encoder for volume and invokes vlc methods in response.
-# It receives events from a rotary encoder for tuning and invokes vlc to go to the next or previous tracks.
+# It receives events from a rotary encoder for songs and invokes vlc to go to the next or previous tracks.
 #
-# Author : Ross Porter, with lots of help from the Internet, specifically including Bob Rathbone and Stephen Christopher Phillips
+# Author : Ross Porter, with lots of help from the Internet, specifically including Bob Rathbone
 #          This is my first Python program...
 #
 
+# Import modules that are included with Rapsbian
 import RPi.GPIO as GPIO
+import sys
 import time
 import os
 import fnmatch
 import glob
 import sys
 import time
-import vlc
 import logging
 import logging.handlers
  
@@ -54,7 +55,21 @@ class MyLogger(object):
 sys.stdout = MyLogger(logger, logging.INFO)
 # Replace stderr with logging to file at ERROR level
 sys.stderr = MyLogger(logger, logging.ERROR)
- 
+
+#OK, let's get this party started.
+#Log that we're starting up
+logger.info("dqmusicbox starting.")
+
+#Import the module that with Python bindings for vlc.
+#This is not included with Raspbian.
+try:
+    import vlc
+except:
+        logger.info("Import vlc module failed -- please insure that the vlc module is installed. Exiting program.")
+        sys.exit(1)
+else:
+    logger.info("vlc module successfully imported.")
+            
 
 # Raspberry Pi Rotary Encoder Class (knobs)
 # $Id: rotary_class.py,v 1.2 2014/01/31 13:34:48 bob Exp $
@@ -87,7 +102,7 @@ class RotaryEncoder:
 		GPIO.setmode(GPIO.BCM)
 		
 		# The following lines enable the internal pull-up resistors
-		# on version 2 (latest) boards
+		# on version 2 boards
 		GPIO.setwarnings(False)
 		GPIO.setup(self.pinA, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 		GPIO.setup(self.pinB, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -149,8 +164,8 @@ class RotaryEncoder:
 
 # End of RotaryEncoder class
 
-
-#Setup the media player with a playlist of all music in a specific folder
+#Now back to code written by Ross
+#Setup the media player with a playlist of all music in a specific folder and subfolders
 music_path = '/home/pi/dqmusicbox/music'
 music_files = [os.path.join(dirpath, f)
                for dirpath, dirnames, files, in sorted(os.walk(music_path))
