@@ -262,9 +262,9 @@ def songs_event(event):
                 logger.info('songs BUTTONUP')
                 #a 10 second press is a shutdown request
                 if time.time() > button_down_time + 10 and time.time() < button_down_time + 30:
-                        logger.info('songs 10 second press; initiating shutdown -h now')
+                        logger.info('songs 10 second press; rebooting now')
                         mlplayer.stop()
-                        os.system("sudo shutdown -h now")
+                        os.system("sudo reboot")
                 return
 
         logger.error('Something weird happened. Unhandled songs knob event?')
@@ -343,9 +343,9 @@ def volume_event(event):
         if event == RotaryEncoder.BUTTONUP:
                 logger.info('volume BUTTONUP')
                 if time.time() > button_down_time + 10 and time.time() < button_down_time + 30:
-                        logger.info('volume 10 second press; rebooting now')
+                        logger.info('songs 10 second press; initiating shutdown -h now')
                         mlplayer.stop()
-                        os.system("sudo reboot")
+                        os.system("sudo shutdown -h now")
                 return
         
         logger.error('Something weird happened. Unhandled volume knob event?')
