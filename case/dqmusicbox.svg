@@ -22,7 +22,8 @@
    version="1.1"><metadata
      id="metadata2286"><rdf:RDF><cc:Work
          rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title><cc:license
+           rdf:resource="https://creativecommons.org/licenses/by-nc-sa/4.0/" /></cc:Work></rdf:RDF></metadata><defs
      id="defs2284"><inkscape:perspective
        sodipodi:type="inkscape:persp3d"
        inkscape:vp_x="0 : 338.38501 : 1"
@@ -672,7 +673,7 @@
      pagecolor="#ffffff"
      id="base"
      inkscape:zoom="0.64"
-     inkscape:cx="1026.4724"
+     inkscape:cx="796.00365"
      inkscape:cy="1367.5491"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
