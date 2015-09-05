@@ -189,7 +189,7 @@ music_path = '/home/pi/dqmusicbox/music'
 music_files = [os.path.join(dirpath, f)
                for dirpath, dirnames, files, in sorted(os.walk(music_path))
                for extension in ['mp3', 'flac', 'm4a']
-               for f in fnmatch.filter(files, '*.' + extension)]
+               for f in fnmatch.filter(sorted(files), '*.' + extension)]
 if len(music_files) == 0:
         msg = 'No music files found in {}. {}'.format(len(music_files),'Exiting.')
         logger.error(msg)
