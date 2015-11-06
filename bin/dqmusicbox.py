@@ -302,13 +302,23 @@ else:
 #This is somewhat specific to the audio device.
 #It should work with the recommended audio device.
 #It may not work with other audio devices.
-        
+
+#set volume level for the Adafruit white dongle USB audio adapter        
 try:
         os.system('sudo amixer sset Headphone 100%')
 except:
         logger.error("The following command failed: sudo amixer sset Headphone 100%. Try this from the command line. You may need to change your system audio configuration. Easiest if you use the recommended USB audio adapter.")
 else:
         logger.info("Set system volume level")
+
+#set volume level for Pluggable USB audio adapter
+try:
+        os.system('sudo amixer sset Speaker 100%')
+except:
+        logger.error("The following command failed: sudo amixer sset Speaker 100%. Try this from the command line. You may need to change your system audio configuration. Easiest if you use the recommended USB audio adapter.")
+else:
+        logger.info("Set system volume level")
+
 
 proc = subprocess.Popen(['sudo amixer get Headphone'], stdout=subprocess.PIPE, shell=True)
 (out,err) = proc.communicate()
