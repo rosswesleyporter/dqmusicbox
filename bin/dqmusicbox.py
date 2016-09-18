@@ -201,7 +201,7 @@ class RotaryEncoder:
 #Now back to code written by Ross
 #Building a Python list of all music in a specific folder and subfolders
 #Engage the media player to build a playlist based on this Python list
-music_path = '/boot/dqmusicbox/music'
+music_path = '/media/usb0'
 music_files = [os.path.join(dirpath, f)
                for dirpath, dirnames, files, in sorted(os.walk(music_path))
                for extension in ['mp3', 'flac', 'm4a']
