@@ -18,7 +18,7 @@
 # This code implements a simple music box.
 # It's an MP3 player on the inside.
 # It looks like an old car radio on the outside (two knobs).
-# It creates a vlc playlist of all the music on the pi.
+# It creates a vlc playlist of all the music on the Pi.
 # It receives events from a rotary encoder for volume and invokes vlc methods in response.
 # It receives events from a rotary encoder for songs and invokes vlc to go to the next or previous tracks.
 #
@@ -42,6 +42,7 @@ import subprocess
  
 #setup logging
 #follows the example of http://blog.scphillips.com/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
+#some of this log setup is not necessary given DietPi's RAM logging, but code below is useful in case it ever runs on regular Raspbian
 LOG_FILENAME = "/var/log/dqmusicbox.log"
 LOG_LEVEL = logging.INFO  # Could be e.g. "DEBUG" or "WARNING"
 # Configure logging to log to a file, making a new file at midnight and keeping the last 3 day's data
@@ -78,7 +79,7 @@ sys.stderr = MyLogger(logger, logging.ERROR)
 logger.info("dqmusicbox starting.")
 
 
-#Define a few things about GPIO / pints
+#Define a few things about GPIO / pins
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False);
 SONGS_NEXT = 3
@@ -200,8 +201,10 @@ class RotaryEncoder:
 
 #Now back to code written by Ross
 #Building a Python list of all music in a specific folder and subfolders
-#Engage the media player to build a playlist based on this Python list
-music_path = '/media/usb0'
+#The folder is assumed to be on a USB thumb drive automounted by DietPi to /mnt/usb_1
+#Music can be MP3, FLAC, iTunes/ACC and must have a proper file extension i.e. .mp3, .flac, .m4a
+#Then engage the media player to build a playlist based on this Python list
+music_path = '/mnt/usb_1'
 music_files = [os.path.join(dirpath, f)
                for dirpath, dirnames, files, in sorted(os.walk(music_path))
                for extension in ['mp3', 'flac', 'm4a']
@@ -251,29 +254,32 @@ last_knob_event = time.time()
 
 #event handler for the songs knob
 def songs_event(event):
-        #global songs_knob
         global button_down_time
         global last_knob_event
         last_knob_event = time.time()
         
+	#handle knob request for next song
         if event == RotaryEncoder.CLOCKWISE:
                 logger.info('songs CLOCKWISE')
                 mlplayer.next()
                 logger.info('track = ' + str(player.get_media().get_mrl()))
                 return
         
+	#handle knob request for previous song
         if event == RotaryEncoder.ANTICLOCKWISE:
                 logger.info('songs ANTICLOCKWISE')
                 mlplayer.previous()
                 logger.info('track = ' + str(player.get_media().get_mrl()))
                 return
 
+	#handle knob request for pause
         if event == RotaryEncoder.BUTTONDOWN:
                 logger.info('songs BUTTONDOWN')
                 button_down_time = time.time()
                 mlplayer.pause()
                 return
 
+	#handle knob request (long hold) for system reboot
         if event == RotaryEncoder.BUTTONUP:
                 logger.info('songs BUTTONUP')
                 #a 10 second press is a shutdown request
@@ -300,29 +306,38 @@ else:
 
 #Set the system volume level. This program does not otherwise change the system volume level.
 #This is somewhat specific to the audio device.
-#It should work with the recommended audio device.
-#It may not work with other audio devices.
+#It should work for the Pi's built-in headphone jack.
 
-#set volume level for the Adafruit white dongle USB audio adapter        
+#set volume level for Pi's built-on headphone jack
 try:
-        os.system('sudo amixer sset Headphone 100%')
+	os.system('sudo amixer -c 0 sset PCM 100%')
 except:
-        logger.error("The following command failed: sudo amixer sset Headphone 100%. Try this from the command line. You may need to change your system audio configuration. Easiest if you use the recommended USB audio adapter.")
+	logger.error("The following command failed: amixer -c 0 sset PCM 100%")
 else:
-        logger.info("Set system volume level")
+	 logger.info("Set system volume level with amixer -c 0 sset PCM 100%")
+
+#set volume level for the Adafruit white dongle USB audio adapter         
+#try:
+#        os.system('sudo amixer sset Headphone 100%')
+#except:
+#        logger.error("The following command failed: sudo amixer sset Headphone 100%. Try this from the command line. You may need to change your system audio configuration. Easiest if you use the recommended USB audio adapter.")
+#else:
+#        logger.info("Set system volume level with sudo amixer sset Headphone 100%'")
+
 
 #set volume level for Pluggable USB audio adapter
-try:
-        os.system('sudo amixer sset Speaker 100%')
-except:
-        logger.error("The following command failed: sudo amixer sset Speaker 100%. Try this from the command line. You may need to change your system audio configuration. Easiest if you use the recommended USB audio adapter.")
-else:
-        logger.info("Set system volume level")
+#try:
+#        os.system('sudo amixer sset Speaker 100%')
+#except:
+#        logger.error("The following command failed: sudo amixer sset Speaker 100%. Try this from the command line. You may need to change your system audio configuration. Easiest if you use the recommended USB audio adapter.")
+#else:
+#        logger.info("Set system volume level")
 
 
-proc = subprocess.Popen(['sudo amixer get Headphone'], stdout=subprocess.PIPE, shell=True)
+#log a bit of diagnostic info about audio
+proc = subprocess.Popen(['sudo amixer -c 0'], stdout=subprocess.PIPE, shell=True)
 (out,err) = proc.communicate()
-logger.info('If audio is not working, check just below to see if Headphone Front Left is set to 100%. Audio will be easiest if you use the recommended USB audio adapter')
+logger.info('A bit of diagnostic info on the state of the Pi built-in headphone jack')
 logger.info(out)
 
 #Set the initial vlc volume level.
@@ -337,22 +352,23 @@ else:
 #Setup the volume knob
 #event handler for the volume knob
 def volume_event(event):
-        #global volume_knob
         global button_down_time
         global last_knob_event
         last_knob_event = time.time()
 
+	#handle knob volume up request
         if event == RotaryEncoder.CLOCKWISE:
                 logger.info('volume CLOCKWISE')
                 if mlplayer.is_playing() == False:
                         logger.info('play')
                         mlplayer.play()
                         logger.info('track = ' + str(player.get_media().get_mrl()))
-                if player.audio_get_volume() <= 95:
+                if player.audio_get_volume() <= 145: #yes, this is 145% - uses vlc's volume boost capability to compensate for the Pi's somewhat quiet headphone jack
                         player.audio_set_volume(player.audio_get_volume()+5)
                         logger.info('volume increased to ' + str(player.audio_get_volume()))
                 return
         
+	#handle knob volume down request
         if event == RotaryEncoder.ANTICLOCKWISE:
                 logger.info('volume ANTICLOCKWISE')
                 if player.audio_get_volume() >= 5:
@@ -360,12 +376,14 @@ def volume_event(event):
                         logger.info('volume decreased to ' + str(player.audio_get_volume()))
                 return
         
+	#handle knob (tap) pause request
         if event == RotaryEncoder.BUTTONDOWN:
                 logger.info('volume BUTTONDOWN')
                 button_down_time = time.time()
                 mlplayer.pause()
                 return
         
+	#handle knob long hold (10-30 sec) request for system shutdown
         if event == RotaryEncoder.BUTTONUP:
                 logger.info('volume BUTTONUP')
                 if time.time() > button_down_time + 10 and time.time() < button_down_time + 30:
