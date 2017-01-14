@@ -25,7 +25,6 @@
 # Author : Ross Porter, with lots of help from the Internet, specifically
 #          including Bob Rathbone and Stephen C Phillips.
 #          This is my first Python program...
-#
 
 # Import modules that are included with Rapsbian
 import RPi.GPIO as GPIO
@@ -41,7 +40,7 @@ import logging.handlers
 import subprocess
  
 #setup logging
-#follows the example of http://blog.scphillips.com/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
+#follows the example from Stephen C Phillips, see http://blog.scphillips.com/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
 #some of this log setup is not necessary given DietPi's RAM logging, but code below is useful in case it ever runs on regular Raspbian
 LOG_FILENAME = "/var/log/dqmusicbox.log"
 LOG_LEVEL = logging.INFO  # Could be e.g. "DEBUG" or "WARNING"
@@ -57,7 +56,7 @@ handler.setFormatter(formatter)
 # Attach the handler to the logger
 logger.addHandler(handler)
  
-# Make a class we can use to capture stdout and sterr in the log
+# Make a class we can use to capture stdout and sterr in the log, still followin the example of Phillips
 class MyLogger(object):
 	def __init__(self, logger, level):
 		"""Needs a logger and a logger level."""
@@ -108,98 +107,17 @@ except:
 else:
     logger.info("vlc module successfully imported.")
 
-
-# Raspberry Pi Rotary Encoder Class (knobs)
-#
-# Author : Bob Rathbone
-# Site   : http://www.bobrathbone.com
-#
-# This class uses standard rotary encoder with push switch
-
-class RotaryEncoder:
-
-	CLOCKWISE=1
-	ANTICLOCKWISE=2
-	BUTTONDOWN=3
-	BUTTONUP=4
-
-	rotary_a = 0
-	rotary_b = 0
-	rotary_c = 0
-	last_state = 0
-	direction = 0
-
-	# Initialise rotary encoder object
-	def __init__(self,pinA,pinB,button,callback):
-		self.pinA = pinA
-		self.pinB = pinB
-		self.button = button
-		self.callback = callback
-		logger.info('You may see some warning about GPIO pull-up resistors. These can be ignored.')
-		
-		# The following lines enable the internal pull-up resistors
-		# on version 2 boards
-		GPIO.setup(self.pinA, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(self.pinB, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(self.button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-		# Add event detection to the GPIO inputs
-		GPIO.add_event_detect(self.pinA, GPIO.FALLING, callback=self.switch_event)
-		GPIO.add_event_detect(self.pinB, GPIO.FALLING, callback=self.switch_event)
-		GPIO.add_event_detect(self.button, GPIO.BOTH, callback=self.button_event, bouncetime=200)
-		return
-
-	# Call back routine called by switch events
-	def switch_event(self,switch):
-		if GPIO.input(self.pinA):
-			self.rotary_a = 1
-		else:
-			self.rotary_a = 0
-
-		if GPIO.input(self.pinB):
-			self.rotary_b = 1
-		else:
-			self.rotary_b = 0
-
-		self.rotary_c = self.rotary_a ^ self.rotary_b
-		new_state = self.rotary_a * 4 + self.rotary_b * 2 + self.rotary_c * 1
-		delta = (new_state - self.last_state) % 4
-		self.last_state = new_state
-		event = 0
-
-		if delta == 1:
-			if self.direction == self.CLOCKWISE:
-				# print "Clockwise"
-				event = self.direction
-			else:
-				self.direction = self.CLOCKWISE
-		elif delta == 3:
-			if self.direction == self.ANTICLOCKWISE:
-				# print "Anticlockwise"
-				event = self.direction
-			else:
-				self.direction = self.ANTICLOCKWISE
-		if event > 0:
-			self.callback(event)
-		return
+#Import Bob Rathbone's module for rotary encoder event handling.
+try:
+    from rotary_class import *
+except:
+        logger.error("Import rotary_class module failed -- please insure that the rotary_class module is available. Exiting.")
+        cleanup()
+        sys.exit(1)
+else:
+    logger.info("rotary_class module successfully imported.")
 
 
-	# Push button up event
-	def button_event(self,button):
-		if GPIO.input(button): 
-			event = self.BUTTONUP 
-		else:
-			event = self.BUTTONDOWN 
-		self.callback(event)
-		return
-
-	# Get a switch state
-	def getSwitchState(self, switch):
-		return  GPIO.input(switch)
-
-# End of RotaryEncoder class
-
-#Now back to code written by Ross
 #Building a Python list of all music in a specific folder and subfolders
 #The folder is assumed to be on a USB thumb drive automounted by DietPi to /mnt/usb_1
 #Music can be MP3, FLAC, iTunes/ACC and must have a proper file extension i.e. .mp3, .flac, .m4a

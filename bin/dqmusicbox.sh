@@ -6,13 +6,12 @@
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Put a short description of the service here
-# Description:       Put a long description of the service here
+# Short-Description: DQMusicBox - play music in response to knob events
+# Description:       DQMusicBox - play music in response to knob events
 ### END INIT INFO
 
-#This script is based partly on http://blog.scphillips.com/posts/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
+#This script is based on Stephen C Phillips excellent example, see http://blog.scphillips.com/posts/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
  
-# Change the next 3 lines to suit where you install your script and what you want to call it
 DIR=/home/pi/dqmusicbox/bin
 DAEMON=$DIR/dqmusicbox.py
 DAEMON_NAME=dqmusicbox
@@ -20,7 +19,6 @@ DAEMON_NAME=dqmusicbox
 # Add any command line options for your daemon here
 DAEMON_OPTS=""
  
-# This next line determines what user the script runs as.
 # Root generally not recommended but necessary if you are using the Raspberry Pi GPIO from Python.
 DAEMON_USER=root
  
