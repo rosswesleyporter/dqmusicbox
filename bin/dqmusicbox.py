@@ -39,44 +39,37 @@ import logging
 import logging.handlers
 import subprocess
  
-#setup logging
-#follows the example from Stephen C Phillips, see http://blog.scphillips.com/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
-#some of this log setup is not necessary given DietPi's RAM logging, but code below is useful in case it ever runs on regular Raspbian
-LOG_FILENAME = "/var/log/dqmusicbox.log"
-LOG_LEVEL = logging.INFO  # Could be e.g. "DEBUG" or "WARNING"
-# Configure logging to log to a file, making a new file at midnight and keeping the last 3 day's data
-logger = logging.getLogger(__name__)
-logger.setLevel(LOG_LEVEL)
-# Make a handler that writes to a file, making a new file at midnight and keeping 3 backups
-handler = logging.handlers.TimedRotatingFileHandler(LOG_FILENAME, when="midnight", backupCount=3)
-# Format each log message like this
+#SETUP LOGGING
+#Some of this log setup is not necessary given DietPi's RAM logging, but useful if this code ever runs on regular Raspbian
+#Here are the examples and documentaton that I followed
+#http://blog.scphillips.com/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
+#https://docs.python.org/3/library/logging.html
+#https://fangpenlin.com/posts/2012/08/26/good-logging-practice-in-python/
+#https://www.loggly.com/ultimate-guide/python-logging-basics/
+#https://docs.python.org/3/library/logging.handlers.html#logging.handlers.TimedRotatingFileHandler
+#https://docs.python.org/3.1/library/logging.html
+logger = logging.getLogger('dqmusicbox')
+logger.setLevel(logging.INFO)
+handler = logging.handlers.TimedRotatingFileHandler("/var/log/dqmusicbox.log", when="midnight", backupCount=2)
 formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
-# Attach the formatter to the handler
 handler.setFormatter(formatter)
-# Attach the handler to the logger
 logger.addHandler(handler)
- 
-# Make a class we can use to capture stdout and sterr in the log, still followin the example of Phillips
-class MyLogger(object):
-	def __init__(self, logger, level):
-		"""Needs a logger and a logger level."""
+#stdout and stderr should also go to log file
+class StdLogger(object):
+	def __init__(self, logger, log_level):
+		"""Log stdout and stderr to log file"""
 		self.logger = logger
-		self.level = level
+		self.level = log_level
  
 	def write(self, message):
-		# Only log if there is a message (not just a new line)
-		if message.rstrip() != "":
-			self.logger.log(self.level, message.rstrip())
+                self.logger.log(self.level, message.rstrip())
  
-# Replace stdout with logging to file at INFO level
-sys.stdout = MyLogger(logger, logging.INFO)
-# Replace stderr with logging to file at ERROR level
-sys.stderr = MyLogger(logger, logging.ERROR)
+sys.stdout = StdLogger(logger, logging.INFO)
+sys.stderr = StdLogger(logger, logging.ERROR)
 
 #OK, let's get this party started.
 #Log that we're starting up
 logger.info("dqmusicbox starting.")
-
 
 #Define a few things about GPIO / pins
 GPIO.setmode(GPIO.BCM)
@@ -118,14 +111,13 @@ else:
     logger.info("rotary_class module successfully imported.")
 
 
-#Building a Python list of all music in a specific folder and subfolders
-#The folder is assumed to be on a USB thumb drive automounted by DietPi to /mnt/usb_1
-#Music can be MP3, FLAC, iTunes/ACC and must have a proper file extension i.e. .mp3, .flac, .m4a
+#Building a Python list of all music on a USB thumb drive automounted by DietPi to /mnt/usb_1
+#Music can be MP3, FLAC, iTunes/AAC, Ogg Vorbis; must have a proper file extension i.e. .mp3, .flac, .m4a, .ogg
 #Then engage the media player to build a playlist based on this Python list
 music_path = '/mnt/usb_1'
 music_files = [os.path.join(dirpath, f)
                for dirpath, dirnames, files, in sorted(os.walk(music_path))
-               for extension in ['mp3', 'flac', 'm4a']
+               for extension in ['mp3', 'flac', 'm4a', 'ogg']
                for f in fnmatch.filter(sorted(files), '*.' + extension)]
 if len(music_files) == 0:
         msg = 'No music files found in {}. {}'.format(len(music_files),'Exiting.')
