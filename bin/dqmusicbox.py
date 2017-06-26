@@ -114,7 +114,7 @@ else:
 #Building a Python list of all music on a USB thumb drive automounted by DietPi to /mnt/usb_1
 #Music can be MP3, FLAC, iTunes/AAC, Ogg Vorbis; must have a proper file extension i.e. .mp3, .flac, .m4a, .ogg
 #Then engage the media player to build a playlist based on this Python list
-music_path = '/mnt'
+music_path = '/mnt/usb_1'
 music_files = [os.path.join(dirpath, f)
                for dirpath, dirnames, files, in sorted(os.walk(music_path))
                for extension in ['mp3', 'flac', 'm4a', 'ogg']
