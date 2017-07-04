@@ -25,11 +25,11 @@
      inkscape:window-maximized="1"
      showgrid="false"
      inkscape:current-layer="layer1"
-     inkscape:window-y="-9"
-     inkscape:window-x="-9"
+     inkscape:window-y="-8"
+     inkscape:window-x="-8"
      inkscape:cy="378.60922"
-     inkscape:cx="414.55875"
-     inkscape:zoom="1.24"
+     inkscape:cx="277.8652"
+     inkscape:zoom="0.77"
      id="base"
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -40,7 +40,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
-     inkscape:window-height="1121" /><metadata
+     inkscape:window-height="1017" /><metadata
      id="metadata2286"><rdf:RDF><cc:Work
          rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
@@ -4094,7 +4094,7 @@
              transform="translate(301)"
              id="path42204" /></g></g></g><g
        id="g44267"
-       transform="matrix(-0.48750693,0,0,-0.48750607,76.849317,215.4258)"
+       transform="matrix(-0.48750693,0,0,-0.48750607,76.849316,215.4258)"
        inkscape:label="Hershey Text"
        style="fill:none;stroke:#ff0000;stroke-width:0.06041422;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"><path
          id="path44257"
