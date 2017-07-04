@@ -1,2 +1,2 @@
 # dqmusicbox
-dqmusicbox allows some people with dementia to listen to and control their favorite music. 
+Music player for people with dementia. 
