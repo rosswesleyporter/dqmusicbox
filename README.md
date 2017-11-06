@@ -1,2 +1,2 @@
 # dqmusicbox
-Music player for people with dementia. 
+Dementia-friendly music player
