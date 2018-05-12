@@ -71,6 +71,9 @@ sys.stderr = StdLogger(logger, logging.ERROR)
 #Log that we're starting up
 logger.info("dqmusicbox starting.")
 
+#Hack to give usbmount time to startup, otherwise we won't have music
+#time.sleep(10)
+
 #Define a few things about GPIO / pins
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False);
@@ -114,19 +117,25 @@ else:
 #Building a Python list of all music on a USB thumb drive automounted by DietPi to /mnt/usb_1
 #Music can be MP3, FLAC, iTunes/AAC, Ogg Vorbis; must have a proper file extension i.e. .mp3, .flac, .m4a, .ogg
 #Then engage the media player to build a playlist based on this Python list
-music_path = '/mnt/usb_1'
-music_files = [os.path.join(dirpath, f)
-               for dirpath, dirnames, files, in sorted(os.walk(music_path))
-               for extension in ['mp3', 'flac', 'm4a', 'ogg']
-               for f in fnmatch.filter(sorted(files), '*.' + extension)]
-if len(music_files) == 0:
-        msg = 'No music files found in {}. {}'.format(len(music_files),'Exiting.')
-        logger.error(msg)
-        cleanup()
-        exit(1)
-else:
-        msg = 'Number of music files found: {}'.format(len(music_files))
-        logger.info(msg)
+#Gives the USB drive with music up to 60 seconds to automount and be available
+music_path = '/media/usb'
+for x in xrange(60):
+	if x == 59:
+		msg =  'Fail. Exiting as no music files found in {}'.format(music_path)		
+		logger.error(msg)
+		cleanup()
+		exit(1)
+	music_files = [os.path.join(dirpath, f)
+		for dirpath, dirnames, files, in sorted(os.walk(music_path))
+		for extension in ['mp3', 'flac', 'm4a', 'ogg']
+		for f in fnmatch.filter(sorted(files), '*.' + extension)]
+	if len(music_files) == 0:
+		logger.info('No music files found yet. Pausing for one second')
+		time.sleep(1)
+	else:
+		msg = 'Success! Number of music files found: {}'.format(len(music_files))
+		logger.info(msg)
+		break
 
 try:
         player = vlc.MediaPlayer()
@@ -252,7 +261,7 @@ logger.info(out)
 
 #Set the initial vlc volume level.
 try:
-        player.audio_set_volume(30)
+        player.audio_set_volume(60)
 except:
         logger.error("Failed to set initial vlc volume level.")
 else:
