@@ -11,4 +11,4 @@ Goals:
 
 The build process is easy -- no soldering, no woodworking. You can make this. Kids can make this. Great project for schools. 
 
-Special thanks to Trey Bagley for designing the 3D printable case for the system.
+Special thanks to Trey Bagley for designing the gorgeous retro-style 3D printable case for the system.
