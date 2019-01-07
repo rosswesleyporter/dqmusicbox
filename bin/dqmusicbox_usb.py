@@ -24,7 +24,6 @@
 #
 # Author : Ross Porter, with lots of help from the Internet, specifically
 #          including Bob Rathbone and Stephen C Phillips.
-#          This is my first Python program...
 
 # Import modules that are included with Rapsbian
 import RPi.GPIO as GPIO

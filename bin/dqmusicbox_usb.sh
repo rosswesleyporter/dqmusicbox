@@ -34,6 +34,7 @@
 #https://wolfpaulus.com/technology/pythonlauncher/
 #http://archives.aidanfindlater.com/blog/2009/09/04/sample-init-d-script/
 
+
 DIR=/home/pi/dqmusicbox/bin
 DAEMON=$DIR/dqmusicbox_usb.py
 DAEMON_NAME=dqmusicbox
