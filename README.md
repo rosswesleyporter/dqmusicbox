@@ -7,8 +7,8 @@ Goals:
 1. Bring the joy of music to those dementia 
 2. Bring the joy of meaningful giving to makers 
 
-47 million people worldwide have dementia. People with dementia often travel back in time by literally forgetting the most recent decades (and modern tech). Thus the old-timey UI of this device. 
+47 million people worldwide have dementia. People with dementia often travel back in time by literally forgetting the most recent decades (and modern tech). Thus the vintage user interface of this device. 
 
 The build process is easy -- no soldering, no woodworking. You can make this. Kids can make this. Great project for schools. 
 
-Special thanks to Trey Bagley for designing the gorgeous retro-style 3D printable case for the system.
+You can choose between a wood enclosure or a 3D printed enclosure. Special thanks to Trey Bagley for designing the gorgeous retro-style 3D printed enclosure.
