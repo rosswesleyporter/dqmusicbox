@@ -23,7 +23,7 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#This script sole purpose is to start a Python program as a service.
+#This script's sole purpose is to start a Python program as a service.
 #Nonetheless, I wanted to follow the rules with this script.
 #So here is the documentation and the examples that I used in writing this script.
 #http://blog.scphillips.com/posts/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
