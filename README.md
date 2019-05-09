@@ -14,6 +14,6 @@ The build process is easy -- no soldering, no woodworking. You can make this. Ki
 
 You can choose between a wood enclosure (photo above) or a 3D printed enclosure. Special thanks to Trey Bagley for designing the gorgeous retro-style 3D printed enclosure.
 
-Everything you need is in this repository e.g. software, build instructions, laser cutting (wood) files, and 3D printing files. If you have a laser cutter or a 3D printer, you can do this at home. Alternatively, you can send the files to an online service of your choice to laser cut or 3D print the enclosure.
+Everything you need is in this repository e.g. software, build instructions, laser cutting (wood) files, and 3D printing files, detailed step-by-step build instructions with photos. If you have a laser cutter or a 3D printer, you can do this at home. Alternatively, you can send the files to an online service of your choice to laser cut or 3D print the enclosure.
 
 For more information, see http://DementiaMusicPlayer.org. 
