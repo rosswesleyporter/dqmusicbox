@@ -1,5 +1,4 @@
 # Dementia Friendly Music Player
-<h1>Dementia-friendly music player</h1>
 
 ![](images/SmallSpeakers_Headphones.jpg)
 
