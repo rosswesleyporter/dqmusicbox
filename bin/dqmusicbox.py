@@ -346,6 +346,6 @@ mlplayer.play()
 
 while True:
         time.sleep(600)
-        if (last_knob_event + 3600) < time.time() and mlplayer.is_playing() == True:  #stop music if no knob activity in the last hour
+        if (last_knob_event + 86400) < time.time() and mlplayer.is_playing() == True:  #pause music if no knob activity in the last 24 hours
                 logger.info('automatic timeout')
                 mlplayer.pause()
