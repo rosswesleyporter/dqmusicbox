@@ -176,28 +176,28 @@ def songs_event(event):
         global last_knob_event
         last_knob_event = time.time()
         
-	    # Handle knob request for next song
+	# Handle knob request for next song
         if event == RotaryEncoder.CLOCKWISE:
                 logger.info('songs CLOCKWISE')
                 mlplayer.next()
                 logger.info('track = ' + str(player.get_media().get_mrl()))
                 return
         
-	    # Handle knob request for previous song
+	# Handle knob request for previous song
         if event == RotaryEncoder.ANTICLOCKWISE:
                 logger.info('songs ANTICLOCKWISE')
                 mlplayer.previous()
                 logger.info('track = ' + str(player.get_media().get_mrl()))
                 return
 
-	    # Handle knob request for pause
+	# Handle knob request for pause
         if event == RotaryEncoder.BUTTONDOWN:
                 logger.info('songs BUTTONDOWN')
                 button_down_time = time.time()
                 mlplayer.pause()
                 return
 
-	    # Handle knob request (long hold) for system reboot
+	# Handle knob request (long hold) for system reboot
         if event == RotaryEncoder.BUTTONUP:
                 logger.info('songs BUTTONUP')
                 # A 10 second press is a shutdown request
@@ -285,35 +285,42 @@ def volume_event(event):
         global button_down_time
         global last_knob_event
         last_knob_event = time.time()
+	increment = 2
 
-	    #handle knob volume up request
+	#handle knob volume up request
         if event == RotaryEncoder.CLOCKWISE:
                 logger.info('volume CLOCKWISE')
                 if mlplayer.is_playing() == False:
                         logger.info('play')
                         mlplayer.play()
                         logger.info('track = ' + str(player.get_media().get_mrl()))
-                if player.audio_get_volume() <= 145: #yes, this is 145% - uses vlc's volume boost capability to compensate for the Pi's somewhat quiet headphone jack
-                        player.audio_set_volume(player.audio_get_volume()+5)
+                if player.audio_get_volume() < 150: #yes, 150% is the max - uses vlc's volume boost capability to compensate for the Pi's somewhat quiet headphone jack
+                        player.audio_set_volume(player.audio_get_volume()+increment)
                         logger.info('volume increased to ' + str(player.audio_get_volume()))
                 return
         
-	    #handle knob volume down request
+	#handle knob volume down request
         if event == RotaryEncoder.ANTICLOCKWISE:
                 logger.info('volume ANTICLOCKWISE')
-                if player.audio_get_volume() >= 5:
-                        player.audio_set_volume(player.audio_get_volume()-5)
-                        logger.info('volume decreased to ' + str(player.audio_get_volume()))
+		#emulate old radios such that turning the volume to zero means turning the device off (we'll pause)
+		if player.audio_get_volume() > 0 and player.audio_get_volume() <= increment:
+			player.audio_set_volume(0)
+			mlplayer.pause()
+			logger.info('volume decreased to 0, so pausing')
+		#decrease volume, but don't go below zero
+		elif player.audio_get_volume() >= increment:
+			player.audio_set_volume(player.audio_get_volume()-increment)
+			logger.info('volume decreased to ' + str(player.audio_get_volume()))
                 return
         
-	    #handle knob (tap) pause request
+	#handle knob (tap) pause request
         if event == RotaryEncoder.BUTTONDOWN:
                 logger.info('volume BUTTONDOWN')
                 button_down_time = time.time()
                 mlplayer.pause()
                 return
         
-	    #handle knob long hold (10-30 sec) request for system shutdown
+	#handle knob long hold (10-30 sec) request for system shutdown
         if event == RotaryEncoder.BUTTONUP:
                 logger.info('volume BUTTONUP')
                 if time.time() > button_down_time + 10 and time.time() < button_down_time + 30:
