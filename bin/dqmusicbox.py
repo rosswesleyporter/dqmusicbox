@@ -285,9 +285,9 @@ def volume_event(event):
         global button_down_time
         global last_knob_event
         last_knob_event = time.time()
-	increment = 2
+        increment = 2
 
-	#handle knob volume up request
+        #handle knob volume up request
         if event == RotaryEncoder.CLOCKWISE:
                 logger.info('volume CLOCKWISE')
                 if mlplayer.is_playing() == False:
