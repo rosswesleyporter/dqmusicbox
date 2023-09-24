@@ -34,50 +34,28 @@
 #https://wolfpaulus.com/technology/pythonlauncher/
 #http://archives.aidanfindlater.com/blog/2009/09/04/sample-init-d-script/
 
-DIR=/home/pi/dqmusicbox/bin
-DAEMON=$DIR/dqmusicbox.py
-DAEMON_NAME=dqmusicbox
-# Root generally not recommended but I think necessary if you are using the Raspberry Pi GPIO from Python.
-DAEMON_USER=root
-PIDFILE=/var/run/$DAEMON_NAME.pid
- 
-. /lib/lsb/init-functions
- 
-do_start () {
-    if start-stop-daemon --start --background --pidfile $PIDFILE --make-pidfile --user $DAEMON_USER --chuid $DAEMON_USER --startas $DAEMON; then
-        log_success_msg "Successfully started $DAEMON_NAME daemon"
-    else 
-        log_failure_msg "Failed to start $DAEMON_NAME daemon"
-    fi
-}
-do_stop () {
-    if start-stop-daemon --stop --pidfile $PIDFILE --retry 20; then
-        log_success_msg "Successfully stopped $DAEMON_NAME daemon"
-    else
-        log_failure_msg "Failed to stop $DAEMON_NAME daemon"
-    fi
-}
- 
 case "$1" in
 
     start)
-        do_start
+        start-stop-daemon --start --background --pidfile /var/run/dqmusicbox.pid --make-pidfile --user root --chuid root --startas /home/pi/dqmusicbox/bin/dqmusicbox.py
+        #do_start
         ;;
 
     stop)
-        do_stop
+        start-stop-daemon --stop --pidfile /var/run/dqmusicbox.pid  --retry 20
+        #do_stop
         ;;
  
     restart|reload|force-reload)
-        do_stop
-        do_start
+        start-stop-daemon --stop --pidfile /var/run/dqmusicbox.pid  --retry 20
+        start-stop-daemon --start --background --pidfile /var/run/dqmusicbox.pid --make-pidfile --user root --chuid root --startas /home/pi/dqmusicbox/bin/dqmusicbox.py
         ;;
  
     status)
-        status_of_proc "$DAEMON_NAME" "$DAEMON" && exit 0 || exit $?
+        status_of_proc "dqmusicbox" "/home/pi/dqmusicbox/bin/dqmusicbox.py" && exit 0 || exit $?
         ;;
     *)
-        echo "Usage: /etc/init.d/$DAEMON_NAME {start|stop|restart|force-reload|status}"
+        echo "Usage: /etc/init.d/dqmusicbox.sh {start|stop|restart|force-reload|status}"
         exit 1
         ;;
  
