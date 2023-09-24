@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 '''
 #This program is free software: you can redistribute it and/or modify
@@ -117,7 +117,7 @@ INDICATOR_LIGHT = 27
 # Music can be MP3, FLAC, iTunes/AAC, Ogg Vorbis; must have a proper file extension i.e. .mp3, .flac, .m4a, .ogg
 # Gives the USB drive with music up to 60 seconds to automount and be available
 music_path = '/media/usb1'
-for x in xrange(60):
+for x in range(60):
 	if x == 59:
 		msg =  'Fail. Exiting as no music files found in {}'.format(music_path)		
 		logger.error(msg)
@@ -176,28 +176,28 @@ def songs_event(event):
         global last_knob_event
         last_knob_event = time.time()
         
-	# Handle knob request for next song
+        # Handle knob request for next song
         if event == RotaryEncoder.CLOCKWISE:
                 logger.info('songs CLOCKWISE')
                 mlplayer.next()
                 logger.info('track = ' + str(player.get_media().get_mrl()))
                 return
         
-	# Handle knob request for previous song
+        # Handle knob request for previous song
         if event == RotaryEncoder.ANTICLOCKWISE:
                 logger.info('songs ANTICLOCKWISE')
                 mlplayer.previous()
                 logger.info('track = ' + str(player.get_media().get_mrl()))
                 return
 
-	# Handle knob request for pause
+        # Handle knob request for pause
         if event == RotaryEncoder.BUTTONDOWN:
                 logger.info('songs BUTTONDOWN')
                 button_down_time = time.time()
                 mlplayer.pause()
                 return
 
-	# Handle knob request (long hold) for system reboot
+        # Handle knob request (long hold) for system reboot
         if event == RotaryEncoder.BUTTONUP:
                 logger.info('songs BUTTONUP')
                 # A 10 second press is a shutdown request
@@ -285,9 +285,9 @@ def volume_event(event):
         global button_down_time
         global last_knob_event
         last_knob_event = time.time()
-	increment = 2
+        increment = 2
 
-	#handle knob volume up request
+        #handle knob volume up request
         if event == RotaryEncoder.CLOCKWISE:
                 logger.info('volume CLOCKWISE')
                 if mlplayer.is_playing() == False:
@@ -299,28 +299,28 @@ def volume_event(event):
                         logger.info('volume increased to ' + str(player.audio_get_volume()))
                 return
         
-	#handle knob volume down request
+        #handle knob volume down request
         if event == RotaryEncoder.ANTICLOCKWISE:
                 logger.info('volume ANTICLOCKWISE')
-		#emulate old radios such that turning the volume to zero means turning the device off (we'll pause)
-		if player.audio_get_volume() > 0 and player.audio_get_volume() <= increment:
-			player.audio_set_volume(0)
-			mlplayer.pause()
-			logger.info('volume decreased to 0, so pausing')
-		#decrease volume, but don't go below zero
-		elif player.audio_get_volume() >= increment:
-			player.audio_set_volume(player.audio_get_volume()-increment)
-			logger.info('volume decreased to ' + str(player.audio_get_volume()))
+                #emulate old radios such that turning the volume to zero means turning the device off (we'll pause)
+                if player.audio_get_volume() > 0 and player.audio_get_volume() <= increment:
+                        player.audio_set_volume(0)
+                        mlplayer.pause()
+                        logger.info('volume decreased to 0, so pausing')
+                #decrease volume, but don't go below zero
+                elif player.audio_get_volume() >= increment:
+                        player.audio_set_volume(player.audio_get_volume()-increment)
+                        logger.info('volume decreased to ' + str(player.audio_get_volume()))
                 return
         
-	#handle knob (tap) pause request
+        #handle knob (tap) pause request
         if event == RotaryEncoder.BUTTONDOWN:
                 logger.info('volume BUTTONDOWN')
                 button_down_time = time.time()
                 mlplayer.pause()
                 return
         
-	#handle knob long hold (10-30 sec) request for system shutdown
+        #handle knob long hold (10-30 sec) request for system shutdown
         if event == RotaryEncoder.BUTTONUP:
                 logger.info('volume BUTTONUP')
                 if time.time() > button_down_time + 10 and time.time() < button_down_time + 30:
